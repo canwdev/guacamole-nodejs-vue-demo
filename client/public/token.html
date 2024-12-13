@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Token Encryption</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    .output-section {
+      margin: 20px 0;
+    }
+    h3 {
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+<h2>Token Encryption Demo</h2>
+<div class="output-section">
+  <h3>Parameters:</h3>
+  <pre id="originalParams"></pre>
+</div>
+<div class="output-section">
+  <h3>Encrypted token:</h3>
+  <pre id="encryptedToken"></pre>
+</div>
+<div class="output-section">
+  <h3>Use this token in the URL:</h3>
+  <pre id="urlToken"></pre>
+</div>
+
+<script>
+  const tokenObject = {
+    connection: {
+      type: "rdp",
+      settings: {
+        "hostname": "10.0.0.12",
+        "username": "user",
+        "password": "Test.Password",
+        "enable-drive": true,
+        "create-drive-path": true,
+        "security": "any",
+        "ignore-cert": true,
+        "enable-wallpaper": true
+      }
+    }
+  };
+
+  const SECRET_KEY = 'MySuperSecretKeyForParamsToken12';
+
+  // 将字符串转换为 Uint8Array
+  function str2ab(str) {
+    const buf = new Uint8Array(str.length);
+    for (let i = 0; i < str.length; i++) {
+      buf[i] = str.charCodeAt(i);
+    }
+    return buf;
+  }
+
+  // Base64 编码和解码函数
+  function base64ToArrayBuffer(base64) {
+    const binaryString = window.atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
+  }
+
+  function arrayBufferToBase64(buffer) {
+    const binary = String.fromCharCode.apply(null, new Uint8Array(buffer));
+    return window.btoa(binary);
+  }
+
+  async function encryptToken(value) {
+    // 生成随机 IV
+    const iv = crypto.getRandomValues(new Uint8Array(16));
+
+    // 从密钥字符串生成密钥
+    const keyMaterial = await crypto.subtle.importKey(
+      "raw",
+      str2ab(SECRET_KEY),
+      { name: "AES-CBC" },
+      false,
+      ["encrypt"]
+    );
+
+    // 加密数据
+    const encoded = new TextEncoder().encode(JSON.stringify(value));
+    const encrypted = await crypto.subtle.encrypt(
+      {
+        name: "AES-CBC",
+        iv: iv
+      },
+      keyMaterial,
+      encoded
+    );
+
+    // 构建结果对象
+    const data = {
+      iv: arrayBufferToBase64(iv),
+      value: arrayBufferToBase64(encrypted)
+    };
+
+    // 返回base64编码的结果
+    return btoa(JSON.stringify(data));
+  }
+
+  // 主函数
+  async function main() {
+    // 显示原始参数
+    const originalToken = JSON.stringify(tokenObject, null, 2);
+    document.getElementById('originalParams').textContent = originalToken;
+
+    // 加密并显示token
+    const token = await encryptToken(tokenObject);
+    document.getElementById('encryptedToken').textContent = token;
+
+    // 显示URL中使用的token
+    const urlencodedToken = encodeURIComponent(token);
+    document.getElementById('urlToken').textContent =
+      `ws://localhost:8080/?token=${urlencodedToken}`;
+  }
+
+  // 执行主函数
+  main().catch(console.error);
+</script>
+</body>
+</html>
