@@ -12,3 +12,70 @@ body {
   height: 100%;
   width: 100%;
 }
+
+.flex-row-center-gap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  .el-button + .el-button {
+    margin: 0;
+  }
+}
+
+.vp-panel {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid gray;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.font-code, .font-code * {
+  font-family: 'Operator Mono', 'Source Code Pro', Menlo, Monaco, Consolas, Courier New, monospace;
+}
+.vp-button {
+  background-color: #FDFDFD;
+  border: 1px solid gray;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+
+  &:not(:disabled) {
+    &:hover {
+      border-color: deepskyblue;
+      outline: 1px solid deepskyblue;
+      outline-offset: -1px;
+    }
+    &:active {
+      opacity: .6;
+    }
+  }
+}
+
+.vp-input {
+  padding: 6px 8px;
+  border: 1px solid gray;
+  scrollbar-width: thin;
+  font-family: inherit;
+
+  &:not(&:disabled) {
+    &:focus {
+      border: 1px solid deepskyblue;
+      outline: none;
+    }
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: .5;
+  }
+}
+
+
+/* Vue3 transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}

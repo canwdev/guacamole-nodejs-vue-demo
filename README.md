@@ -38,7 +38,7 @@ const guacServer = new GuacamoleLite({
 Start server
 ```shell
 yarn install
-yarn dev
+node server.js
 ```
 
 ### Client
